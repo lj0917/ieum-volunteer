@@ -628,6 +628,14 @@
 }
 
 /* Page head (board / gallery) */
+.page-banner {
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  margin-bottom: 28px;
+  display: block;
+}
+
 .page-head {
   display: flex;
   align-items: flex-end;
