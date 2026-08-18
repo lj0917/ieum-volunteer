@@ -13,7 +13,7 @@ const NAV_LINKS = [
 function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const { user, displayName, signOut } = useAuth()
+  const { user, displayName, isAdmin, signOut } = useAuth()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -21,6 +21,8 @@ function Header() {
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  const navLinks = isAdmin ? [...NAV_LINKS, { href: '/admin/members', label: '회원관리' }] : NAV_LINKS
 
   return (
     <header className={`site-header ${scrolled ? 'is-scrolled' : ''}`}>
@@ -32,7 +34,7 @@ function Header() {
 
         <nav className={`nav ${menuOpen ? 'is-open' : ''}`}>
           <ul>
-            {NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <li key={link.href}>
                 <Link to={link.href} onClick={() => setMenuOpen(false)}>
                   {link.label}
