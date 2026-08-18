@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import bannerGallery from '../assets/images/banner-gallery.webp'
 
 const BUCKET = 'activity-photos'
 const MAX_SIZE = 5 * 1024 * 1024
@@ -109,6 +110,8 @@ function GalleryPage() {
   return (
     <section className="section gallery-page">
       <div className="container">
+        <img src={bannerGallery} alt="이음봉사단 사진첩" className="page-banner" />
+
         <div className="page-head">
           <div>
             <span className="eyebrow">활동 사진첩</span>
