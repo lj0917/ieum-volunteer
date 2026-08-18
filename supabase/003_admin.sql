@@ -16,6 +16,10 @@ set email = u.email
 from auth.users u
 where p.id = u.id and p.email is null;
 
+-- approved 컬럼을 참조하는 기존 정책부터 제거해야 컬럼을 지울 수 있음
+drop policy if exists "posts_insert_authenticated" on public.posts;
+drop policy if exists "comments_insert_authenticated" on public.comments;
+
 alter table public.profiles drop column if exists approved;
 
 -- 회원가입 트리거 함수: email도 함께 저장하도록 갱신
@@ -31,15 +35,13 @@ begin
 end;
 $$;
 
--- 글쓰기/댓글 작성 권한을 status = 'approved' 기준으로 갱신
-drop policy if exists "posts_insert_authenticated" on public.posts;
+-- 글쓰기/댓글 작성 권한을 status = 'approved' 기준으로 재생성
 create policy "posts_insert_authenticated" on public.posts for insert
   with check (
     auth.uid() = author_id
     and exists (select 1 from public.profiles p where p.id = auth.uid() and p.status = 'approved')
   );
 
-drop policy if exists "comments_insert_authenticated" on public.comments;
 create policy "comments_insert_authenticated" on public.comments for insert
   with check (
     auth.uid() = author_id
