@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import DOMPurify from 'dompurify'
 import { supabase } from '../lib/supabaseClient.js'
 import { useAuth } from '../context/AuthContext.jsx'
 
@@ -120,7 +121,34 @@ function BoardDetailPage() {
           <p className="board-list__meta">
             {post.author_name} · {formatDate(post.created_at)}
           </p>
-          <div className="board-detail__content">{post.content}</div>
+          <div
+            className="board-detail__content board-editor__content"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(post.content, {
+                ALLOWED_TAGS: [
+                  'p',
+                  'br',
+                  'strong',
+                  'em',
+                  'u',
+                  's',
+                  'span',
+                  'ul',
+                  'ol',
+                  'li',
+                  'img',
+                  'a',
+                  'h1',
+                  'h2',
+                  'h3',
+                  'blockquote',
+                  'code',
+                  'pre',
+                ],
+                ALLOWED_ATTR: ['style', 'src', 'alt', 'href', 'class', 'target', 'rel'],
+              }),
+            }}
+          />
 
           {user?.id === post.author_id && (
             <button type="button" className="link-btn link-btn--danger" onClick={deletePost}>

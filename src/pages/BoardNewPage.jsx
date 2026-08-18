@@ -2,6 +2,11 @@ import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import RichTextEditor from '../components/RichTextEditor.jsx'
+
+function isContentEmpty(html) {
+  return !html || html.replace(/<[^>]*>/g, '').trim().length === 0
+}
 
 function BoardNewPage() {
   const { user, displayName, approved } = useAuth()
@@ -30,6 +35,12 @@ function BoardNewPage() {
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    if (isContentEmpty(content)) {
+      setError('내용을 입력해주세요.')
+      return
+    }
+
     setLoading(true)
 
     const { data, error: insertError } = await supabase
@@ -71,13 +82,7 @@ function BoardNewPage() {
           </label>
           <label>
             내용
-            <textarea
-              required
-              rows={10}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="내용을 입력하세요"
-            />
+            <RichTextEditor content={content} onChange={setContent} placeholder="내용을 입력하세요" />
           </label>
 
           {error && <p className="auth-form__error">{error}</p>}
