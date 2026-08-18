@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
+import { useAuth } from '../context/AuthContext.jsx'
 
 const BUCKET = 'activity-photos'
 const MAX_SIZE = 5 * 1024 * 1024
@@ -10,14 +12,15 @@ function publicUrlFor(path) {
 }
 
 function GalleryPage() {
+  const { user, displayName, approved } = useAuth()
   const [photos, setPhotos] = useState([])
   const [loading, setLoading] = useState(true)
 
   const [file, setFile] = useState(null)
   const [caption, setCaption] = useState('')
-  const [uploaderName, setUploaderName] = useState('')
   const [error, setError] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
 
   const loadPhotos = async () => {
     setLoading(true)
@@ -77,7 +80,8 @@ function GalleryPage() {
     const { error: insertError } = await supabase.from('photos').insert({
       storage_path: path,
       caption,
-      uploader_name: uploaderName.trim() || '익명',
+      uploader_name: displayName,
+      uploader_id: user.id,
     })
 
     setUploading(false)
@@ -89,9 +93,17 @@ function GalleryPage() {
 
     setFile(null)
     setCaption('')
-    setUploaderName('')
     e.target.reset()
     loadPhotos()
+  }
+
+  const onDelete = async (photo) => {
+    if (!window.confirm('이 사진을 삭제할까요?')) return
+    setDeletingId(photo.id)
+    await supabase.storage.from(BUCKET).remove([photo.storage_path])
+    await supabase.from('photos').delete().eq('id', photo.id)
+    setDeletingId(null)
+    setPhotos((prev) => prev.filter((p) => p.id !== photo.id))
   }
 
   return (
@@ -104,29 +116,30 @@ function GalleryPage() {
           </div>
         </div>
 
-        <form onSubmit={onSubmit} className="upload-form">
-          <label className="upload-form__file">
-            사진 선택
-            <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={onFileChange} />
-          </label>
-          <input
-            type="text"
-            maxLength={80}
-            placeholder="사진 설명 (선택)"
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-          />
-          <input
-            type="text"
-            maxLength={20}
-            placeholder="이름 (선택, 비워두면 익명)"
-            value={uploaderName}
-            onChange={(e) => setUploaderName(e.target.value)}
-          />
-          <button type="submit" className="btn btn-primary" disabled={uploading}>
-            {uploading ? '업로드 중…' : '업로드'}
-          </button>
-        </form>
+        {user && approved && (
+          <form onSubmit={onSubmit} className="upload-form">
+            <label className="upload-form__file">
+              사진 선택
+              <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={onFileChange} />
+            </label>
+            <input
+              type="text"
+              maxLength={80}
+              placeholder="사진 설명 (선택)"
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+            />
+            <button type="submit" className="btn btn-primary" disabled={uploading}>
+              {uploading ? '업로드 중…' : '업로드'}
+            </button>
+          </form>
+        )}
+        {user && !approved && <p className="board-empty">관리자 승인 후 사진을 업로드할 수 있습니다.</p>}
+        {!user && (
+          <p className="board-empty">
+            <Link to="/login">로그인</Link> 후 사진을 업로드할 수 있습니다.
+          </p>
+        )}
         {error && <p className="auth-form__error">{error}</p>}
 
         {loading && <p className="board-empty">불러오는 중…</p>}
@@ -141,6 +154,16 @@ function GalleryPage() {
                   {p.caption && <span>{p.caption}</span>}
                   <span className="photo-grid__uploader">{p.uploader_name}</span>
                 </figcaption>
+              )}
+              {Boolean(user) && user.id === p.uploader_id && (
+                <button
+                  type="button"
+                  className="photo-grid__delete"
+                  disabled={deletingId === p.id}
+                  onClick={() => onDelete(p)}
+                >
+                  삭제
+                </button>
               )}
             </figure>
           ))}

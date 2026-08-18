@@ -11,6 +11,8 @@ import BoardDetailPage from './pages/BoardDetailPage.jsx'
 import BoardNewPage from './pages/BoardNewPage.jsx'
 import GalleryPage from './pages/GalleryPage.jsx'
 import AdminMembersPage from './pages/AdminMembersPage.jsx'
+import AdminPostsPage from './pages/AdminPostsPage.jsx'
+import AdminPhotosPage from './pages/AdminPhotosPage.jsx'
 import './App.css'
 
 function ScrollToHash() {
@@ -46,6 +48,8 @@ function App() {
             <Route path="/board/:id" element={<BoardDetailPage />} />
             <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/admin/members" element={<AdminMembersPage />} />
+            <Route path="/admin/posts" element={<AdminPostsPage />} />
+            <Route path="/admin/photos" element={<AdminPhotosPage />} />
           </Routes>
         </main>
         <Footer />

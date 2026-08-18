@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { supabase } from '../lib/supabaseClient.js'
+import AdminNav from '../components/AdminNav.jsx'
 
 const STATUS_LABEL = {
   pending: '승인 대기',
@@ -95,6 +96,8 @@ function AdminMembersPage() {
             <h1>회원 관리</h1>
           </div>
         </div>
+
+        <AdminNav />
 
         {error && <p className="auth-form__error">{error}</p>}
         {loading && <p className="board-empty">불러오는 중…</p>}

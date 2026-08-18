@@ -22,7 +22,7 @@ function Header() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const navLinks = isAdmin ? [...NAV_LINKS, { href: '/admin/members', label: '회원관리' }] : NAV_LINKS
+  const navLinks = isAdmin ? [...NAV_LINKS, { href: '/admin/members', label: '관리자' }] : NAV_LINKS
 
   return (
     <header className={`site-header ${scrolled ? 'is-scrolled' : ''}`}>
