@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
 import { useAuth } from '../context/AuthContext.jsx'
-import bannerBoard from '../assets/images/banner-board.webp'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
@@ -36,8 +35,6 @@ function BoardListPage() {
   return (
     <section className="section board-page">
       <div className="container">
-        <img src={bannerBoard} alt="이음봉사단 게시판" className="page-banner" />
-
         <div className="page-head">
           <div>
             <span className="eyebrow">게시판</span>

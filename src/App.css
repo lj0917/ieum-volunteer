@@ -628,13 +628,6 @@
 }
 
 /* Page head (board / gallery) */
-.page-banner {
-  width: 100%;
-  border-radius: 16px;
-  margin-bottom: 32px;
-  display: block;
-}
-
 .page-head {
   display: flex;
   align-items: flex-end;
