@@ -50,6 +50,8 @@ function SignupPage() {
             <h1>가입 완료</h1>
             <p className="auth-card__sub">
               {email}로 인증 메일을 보내드렸습니다. 메일함에서 인증 링크를 확인한 뒤 로그인해주세요.
+              <br />
+              로그인 후에도 관리자 승인이 완료되어야 게시판 글쓰기·댓글이 가능합니다.
             </p>
             <Link to="/login" className="btn btn-primary">
               로그인하러 가기

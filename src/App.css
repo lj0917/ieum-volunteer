@@ -734,6 +734,18 @@
   padding: 40px 0;
 }
 
+.pending-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #a15c00;
+  background: #fff3e0;
+  border: 1px solid rgba(161, 92, 0, 0.25);
+  border-radius: 999px;
+  padding: 8px 16px;
+}
+
 .board-list {
   display: flex;
   flex-direction: column;

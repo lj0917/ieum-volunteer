@@ -8,7 +8,7 @@ function formatDate(iso) {
 }
 
 function BoardListPage() {
-  const { user } = useAuth()
+  const { user, approved } = useAuth()
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -40,11 +40,13 @@ function BoardListPage() {
             <span className="eyebrow">게시판</span>
             <h1>이음봉사단 게시판</h1>
           </div>
-          {user ? (
+          {user && approved && (
             <Link to="/board/new" className="btn btn-primary">
               글쓰기
             </Link>
-          ) : (
+          )}
+          {user && !approved && <span className="pending-badge">승인 대기중</span>}
+          {!user && (
             <Link to="/login" className="btn btn-outline">
               로그인 후 글쓰기
             </Link>

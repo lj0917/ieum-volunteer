@@ -15,7 +15,7 @@ function formatDate(iso) {
 
 function BoardDetailPage() {
   const { id } = useParams()
-  const { user, displayName } = useAuth()
+  const { user, displayName, approved } = useAuth()
   const navigate = useNavigate()
 
   const [post, setPost] = useState(null)
@@ -154,7 +154,7 @@ function BoardDetailPage() {
             {comments.length === 0 && <li className="board-empty">첫 댓글을 남겨보세요.</li>}
           </ul>
 
-          {user ? (
+          {user && approved && (
             <form onSubmit={onCommentSubmit} className="comment-form">
               <textarea
                 required
@@ -168,7 +168,9 @@ function BoardDetailPage() {
                 {submitting ? '등록 중…' : '댓글 등록'}
               </button>
             </form>
-          ) : (
+          )}
+          {user && !approved && <p className="board-empty">관리자 승인 후 댓글을 남길 수 있습니다.</p>}
+          {!user && (
             <p className="board-empty">
               <Link to="/login">로그인</Link> 후 댓글을 남길 수 있습니다.
             </p>

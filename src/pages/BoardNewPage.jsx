@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient.js'
 import { useAuth } from '../context/AuthContext.jsx'
 
 function BoardNewPage() {
-  const { user, displayName } = useAuth()
+  const { user, displayName, approved } = useAuth()
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -13,6 +13,18 @@ function BoardNewPage() {
 
   if (!user) {
     return <Navigate to="/login" replace />
+  }
+
+  if (!approved) {
+    return (
+      <section className="section board-page">
+        <div className="container">
+          <p className="board-empty">
+            아직 관리자 승인 대기중입니다. 승인 후 글을 작성할 수 있어요.
+          </p>
+        </div>
+      </section>
+    )
   }
 
   const onSubmit = async (e) => {
