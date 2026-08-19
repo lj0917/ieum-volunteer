@@ -4,6 +4,8 @@ const TABS = [
   { to: '/admin/members', label: '회원 관리' },
   { to: '/admin/posts', label: '게시판 관리' },
   { to: '/admin/photos', label: '사진첩 관리' },
+  { to: '/admin/notices', label: '공지사항 관리' },
+  { to: '/admin/hours', label: '봉사시간 관리' },
 ]
 
 function AdminNav() {
