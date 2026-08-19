@@ -22,6 +22,7 @@ function AdminHoursPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selectedMemberId, setSelectedMemberId] = useState('')
+  const [selectedActivityItemId, setSelectedActivityItemId] = useState('')
 
   const [bulkActivityItemId, setBulkActivityItemId] = useState('')
   const [bulkDate, setBulkDate] = useState(todayInputValue())
@@ -29,6 +30,13 @@ function AdminHoursPage() {
   const [bulkNote, setBulkNote] = useState('')
   const [participantIds, setParticipantIds] = useState([])
   const [saving, setSaving] = useState(false)
+
+  const [editingId, setEditingId] = useState(null)
+  const [editDate, setEditDate] = useState('')
+  const [editActivityItemId, setEditActivityItemId] = useState('')
+  const [editHours, setEditHours] = useState('')
+  const [editNote, setEditNote] = useState('')
+  const [editSaving, setEditSaving] = useState(false)
 
   const loadAll = async () => {
     setLoading(true)
@@ -63,9 +71,11 @@ function AdminHoursPage() {
     return map
   }, [members])
 
-  const filteredRecords = selectedMemberId
-    ? records.filter((r) => r.member_id === selectedMemberId)
-    : records
+  const filteredRecords = records.filter((r) => {
+    if (selectedMemberId && r.member_id !== selectedMemberId) return false
+    if (selectedActivityItemId && r.activity_item_id !== selectedActivityItemId) return false
+    return true
+  })
 
   const totalHours = filteredRecords.reduce((sum, r) => sum + Number(r.hours), 0)
 
@@ -122,6 +132,47 @@ function AdminHoursPage() {
     if (!window.confirm('이 기록을 삭제할까요?')) return
     await supabase.from('volunteer_hours').delete().eq('id', id)
     setRecords((prev) => prev.filter((r) => r.id !== id))
+    if (editingId === id) setEditingId(null)
+  }
+
+  const startEdit = (record) => {
+    setEditingId(record.id)
+    setEditDate(record.activity_date)
+    setEditActivityItemId(record.activity_item_id || '')
+    setEditHours(String(record.hours))
+    setEditNote(record.note || '')
+  }
+
+  const cancelEdit = () => setEditingId(null)
+
+  const saveEdit = async (id) => {
+    if (!editHours) {
+      setError('시간을 입력해주세요.')
+      return
+    }
+    const activityItem = activityItems.find((a) => a.id === editActivityItemId)
+
+    setEditSaving(true)
+    setError('')
+    const { error: updateError } = await supabase
+      .from('volunteer_hours')
+      .update({
+        activity_date: editDate,
+        activity_item_id: editActivityItemId || null,
+        activity_name: activityItem?.name || records.find((r) => r.id === id)?.activity_name || '',
+        hours: Number(editHours),
+        note: editNote.trim() || null,
+      })
+      .eq('id', id)
+    setEditSaving(false)
+
+    if (updateError) {
+      setError('수정에 실패했습니다.')
+      return
+    }
+
+    setEditingId(null)
+    loadAll()
   }
 
   const onDownload = () => {
@@ -137,7 +188,11 @@ function AdminHoursPage() {
         r.note || '',
       ]
     })
-    const label = selectedMemberId ? memberNameById[selectedMemberId] || '회원' : '전체'
+    const memberLabel = selectedMemberId ? memberNameById[selectedMemberId] || '회원' : '전체'
+    const itemLabel = selectedActivityItemId
+      ? activityItems.find((a) => a.id === selectedActivityItemId)?.name || '활동'
+      : null
+    const label = itemLabel ? `${memberLabel}_${itemLabel}` : memberLabel
     downloadCsv(`봉사시간_${label}_${todayInputValue()}.csv`, headers, rows)
   }
 
@@ -237,10 +292,18 @@ function AdminHoursPage() {
             <h2 className="hours-section-title">등록 기록</h2>
             <div className="hours-toolbar">
               <select value={selectedMemberId} onChange={(e) => setSelectedMemberId(e.target.value)}>
-                <option value="">전체 보기</option>
+                <option value="">회원 전체</option>
                 {members.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.display_name} ({m.email})
+                  </option>
+                ))}
+              </select>
+              <select value={selectedActivityItemId} onChange={(e) => setSelectedActivityItemId(e.target.value)}>
+                <option value="">활동 항목 전체</option>
+                {activityItems.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
                   </option>
                 ))}
               </select>
@@ -263,24 +326,75 @@ function AdminHoursPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredRecords.map((r) => (
-                    <tr key={r.id}>
-                      {!selectedMemberId && <td>{memberNameById[r.member_id] || '(탈퇴한 회원)'}</td>}
-                      <td>{formatDate(r.activity_date)}</td>
-                      <td>{r.activity_name}</td>
-                      <td>{r.hours}</td>
-                      <td>{r.note || '-'}</td>
-                      <td className="admin-table__actions">
-                        <button
-                          type="button"
-                          className="link-btn link-btn--danger"
-                          onClick={() => deleteRecord(r.id)}
-                        >
-                          삭제
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredRecords.map((r) =>
+                    editingId === r.id ? (
+                      <tr key={r.id}>
+                        {!selectedMemberId && <td>{memberNameById[r.member_id] || '(탈퇴한 회원)'}</td>}
+                        <td>
+                          <input
+                            type="date"
+                            value={editDate}
+                            onChange={(e) => setEditDate(e.target.value)}
+                          />
+                        </td>
+                        <td>
+                          <select value={editActivityItemId} onChange={(e) => setEditActivityItemId(e.target.value)}>
+                            <option value="">(직접입력 유지)</option>
+                            {activityItems.map((item) => (
+                              <option key={item.id} value={item.id}>
+                                {item.name}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.5"
+                            value={editHours}
+                            onChange={(e) => setEditHours(e.target.value)}
+                          />
+                        </td>
+                        <td>
+                          <input type="text" value={editNote} onChange={(e) => setEditNote(e.target.value)} />
+                        </td>
+                        <td className="admin-table__actions">
+                          <button
+                            type="button"
+                            className="link-btn"
+                            disabled={editSaving}
+                            onClick={() => saveEdit(r.id)}
+                          >
+                            저장
+                          </button>
+                          <button type="button" className="link-btn" onClick={cancelEdit}>
+                            취소
+                          </button>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr key={r.id}>
+                        {!selectedMemberId && <td>{memberNameById[r.member_id] || '(탈퇴한 회원)'}</td>}
+                        <td>{formatDate(r.activity_date)}</td>
+                        <td>{r.activity_name}</td>
+                        <td>{r.hours}</td>
+                        <td>{r.note || '-'}</td>
+                        <td className="admin-table__actions">
+                          <button type="button" className="link-btn" onClick={() => startEdit(r)}>
+                            수정
+                          </button>
+                          <button
+                            type="button"
+                            className="link-btn link-btn--danger"
+                            onClick={() => deleteRecord(r.id)}
+                          >
+                            삭제
+                          </button>
+                        </td>
+                      </tr>
+                    ),
+                  )}
                   {filteredRecords.length === 0 && (
                     <tr>
                       <td colSpan={selectedMemberId ? 5 : 6} className="board-empty">

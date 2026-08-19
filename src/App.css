@@ -1010,6 +1010,18 @@
   white-space: nowrap;
 }
 
+.admin-table td input,
+.admin-table td select {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #fff;
+  width: 100%;
+  min-width: 90px;
+}
+
 .admin-table thead {
   background: var(--bg-soft);
 }
