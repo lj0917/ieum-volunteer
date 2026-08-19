@@ -17,6 +17,7 @@ import NoticesListPage from './pages/NoticesListPage.jsx'
 import NoticeDetailPage from './pages/NoticeDetailPage.jsx'
 import AdminNoticesPage from './pages/AdminNoticesPage.jsx'
 import AdminHoursPage from './pages/AdminHoursPage.jsx'
+import AdminActivityItemsPage from './pages/AdminActivityItemsPage.jsx'
 import './App.css'
 
 function ScrollToHash() {
@@ -58,6 +59,7 @@ function App() {
             <Route path="/admin/photos" element={<AdminPhotosPage />} />
             <Route path="/admin/notices" element={<AdminNoticesPage />} />
             <Route path="/admin/hours" element={<AdminHoursPage />} />
+            <Route path="/admin/activity-items" element={<AdminActivityItemsPage />} />
           </Routes>
         </main>
         <Footer />

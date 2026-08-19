@@ -17,28 +17,36 @@ function todayInputValue() {
 function AdminHoursPage() {
   const { user, isAdmin, loading: authLoading } = useAuth()
   const [members, setMembers] = useState([])
+  const [activityItems, setActivityItems] = useState([])
   const [records, setRecords] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selectedMemberId, setSelectedMemberId] = useState('')
 
-  const [activityDate, setActivityDate] = useState(todayInputValue())
-  const [activityName, setActivityName] = useState('')
-  const [hours, setHours] = useState('')
-  const [note, setNote] = useState('')
+  const [bulkActivityItemId, setBulkActivityItemId] = useState('')
+  const [bulkDate, setBulkDate] = useState(todayInputValue())
+  const [bulkHours, setBulkHours] = useState('')
+  const [bulkNote, setBulkNote] = useState('')
+  const [participantIds, setParticipantIds] = useState([])
   const [saving, setSaving] = useState(false)
 
   const loadAll = async () => {
     setLoading(true)
     setError('')
-    const [{ data: memberData, error: memberError }, { data: hourData, error: hourError }] = await Promise.all([
+    const [
+      { data: memberData, error: memberError },
+      { data: hourData, error: hourError },
+      { data: itemData, error: itemError },
+    ] = await Promise.all([
       supabase.from('profiles').select('id, display_name, email').eq('status', 'approved').order('display_name'),
       supabase.from('volunteer_hours').select('*').order('activity_date', { ascending: false }),
+      supabase.from('activity_items').select('*').order('name'),
     ])
-    if (memberError || hourError) setError('데이터를 불러오지 못했습니다.')
+    if (memberError || hourError || itemError) setError('데이터를 불러오지 못했습니다.')
     else {
       setMembers(memberData)
       setRecords(hourData)
+      setActivityItems(itemData)
     }
     setLoading(false)
   }
@@ -61,27 +69,42 @@ function AdminHoursPage() {
 
   const totalHours = filteredRecords.reduce((sum, r) => sum + Number(r.hours), 0)
 
-  const onSubmit = async (e) => {
+  const toggleParticipant = (memberId) => {
+    setParticipantIds((prev) =>
+      prev.includes(memberId) ? prev.filter((id) => id !== memberId) : [...prev, memberId],
+    )
+  }
+
+  const onBulkSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
-    if (!selectedMemberId) {
-      setError('먼저 회원을 선택해주세요.')
+    if (!bulkActivityItemId) {
+      setError('활동 항목을 선택해주세요.')
       return
     }
-    if (!activityName.trim() || !hours) {
-      setError('활동 내용과 시간을 입력해주세요.')
+    if (!bulkHours) {
+      setError('시간을 입력해주세요.')
+      return
+    }
+    if (participantIds.length === 0) {
+      setError('참여한 회원을 한 명 이상 선택해주세요.')
       return
     }
 
+    const activityItem = activityItems.find((a) => a.id === bulkActivityItemId)
+
     setSaving(true)
-    const { error: insertError } = await supabase.from('volunteer_hours').insert({
-      member_id: selectedMemberId,
-      activity_date: activityDate,
-      activity_name: activityName.trim(),
-      hours: Number(hours),
-      note: note.trim() || null,
-    })
+    const { error: insertError } = await supabase.from('volunteer_hours').insert(
+      participantIds.map((memberId) => ({
+        member_id: memberId,
+        activity_date: bulkDate,
+        activity_name: activityItem?.name || '',
+        activity_item_id: bulkActivityItemId,
+        hours: Number(bulkHours),
+        note: bulkNote.trim() || null,
+      })),
+    )
     setSaving(false)
 
     if (insertError) {
@@ -89,9 +112,9 @@ function AdminHoursPage() {
       return
     }
 
-    setActivityName('')
-    setHours('')
-    setNote('')
+    setBulkHours('')
+    setBulkNote('')
+    setParticipantIds([])
     loadAll()
   }
 
@@ -155,6 +178,63 @@ function AdminHoursPage() {
 
         {!loading && (
           <>
+            <h2 className="hours-section-title">활동 인원·시간 일괄 등록</h2>
+            {activityItems.length === 0 ? (
+              <p className="board-empty">
+                등록된 활동 항목이 없습니다. 먼저 활동 항목 관리에서 항목을 추가해주세요.
+              </p>
+            ) : (
+              <form onSubmit={onBulkSubmit} className="hours-form hours-form--bulk">
+                <select value={bulkActivityItemId} onChange={(e) => setBulkActivityItemId(e.target.value)}>
+                  <option value="">활동 항목 선택</option>
+                  {activityItems.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+                <input type="date" required value={bulkDate} onChange={(e) => setBulkDate(e.target.value)} />
+                <input
+                  type="number"
+                  required
+                  min="0"
+                  step="0.5"
+                  placeholder="시간"
+                  value={bulkHours}
+                  onChange={(e) => setBulkHours(e.target.value)}
+                />
+                <input
+                  type="text"
+                  maxLength={100}
+                  placeholder="비고 (선택)"
+                  value={bulkNote}
+                  onChange={(e) => setBulkNote(e.target.value)}
+                />
+
+                <div className="member-check-list">
+                  {members.map((m) => (
+                    <label key={m.id} className="member-check-list__item">
+                      <input
+                        type="checkbox"
+                        checked={participantIds.includes(m.id)}
+                        onChange={() => toggleParticipant(m.id)}
+                      />
+                      {m.display_name}
+                    </label>
+                  ))}
+                  {members.length === 0 && <p className="board-empty">승인된 회원이 없습니다.</p>}
+                </div>
+
+                <div className="board-form__actions">
+                  <span className="hours-toolbar__total">{participantIds.length}명 선택됨</span>
+                  <button type="submit" className="btn btn-primary" disabled={saving}>
+                    {saving ? '등록 중…' : '일괄 등록'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <h2 className="hours-section-title">등록 기록</h2>
             <div className="hours-toolbar">
               <select value={selectedMemberId} onChange={(e) => setSelectedMemberId(e.target.value)}>
                 <option value="">전체 보기</option>
@@ -169,44 +249,6 @@ function AdminHoursPage() {
                 CSV 다운로드
               </button>
             </div>
-
-            {selectedMemberId && (
-              <form onSubmit={onSubmit} className="hours-form">
-                <input
-                  type="date"
-                  required
-                  value={activityDate}
-                  onChange={(e) => setActivityDate(e.target.value)}
-                />
-                <input
-                  type="text"
-                  required
-                  maxLength={100}
-                  placeholder="활동 내용"
-                  value={activityName}
-                  onChange={(e) => setActivityName(e.target.value)}
-                />
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  step="0.5"
-                  placeholder="시간"
-                  value={hours}
-                  onChange={(e) => setHours(e.target.value)}
-                />
-                <input
-                  type="text"
-                  maxLength={100}
-                  placeholder="비고 (선택)"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                />
-                <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
-                  {saving ? '등록 중…' : '추가'}
-                </button>
-              </form>
-            )}
 
             <div className="admin-table__wrap">
               <table className="admin-table">
