@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: '/notices', label: '공지사항' },
   { href: '/board', label: '게시판' },
   { href: '/gallery', label: '사진첩' },
+  { href: '/local-news', label: '북구소식' },
 ]
 
 function Header() {

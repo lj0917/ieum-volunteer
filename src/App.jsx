@@ -18,6 +18,8 @@ import NoticeDetailPage from './pages/NoticeDetailPage.jsx'
 import AdminNoticesPage from './pages/AdminNoticesPage.jsx'
 import AdminHoursPage from './pages/AdminHoursPage.jsx'
 import AdminActivityItemsPage from './pages/AdminActivityItemsPage.jsx'
+import LocalNewsPage from './pages/LocalNewsPage.jsx'
+import AdminLocalNewsPage from './pages/AdminLocalNewsPage.jsx'
 import './App.css'
 
 function ScrollToHash() {
@@ -54,12 +56,14 @@ function App() {
             <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/notices" element={<NoticesListPage />} />
             <Route path="/notices/:id" element={<NoticeDetailPage />} />
+            <Route path="/local-news" element={<LocalNewsPage />} />
             <Route path="/admin/members" element={<AdminMembersPage />} />
             <Route path="/admin/posts" element={<AdminPostsPage />} />
             <Route path="/admin/photos" element={<AdminPhotosPage />} />
             <Route path="/admin/notices" element={<AdminNoticesPage />} />
             <Route path="/admin/hours" element={<AdminHoursPage />} />
             <Route path="/admin/activity-items" element={<AdminActivityItemsPage />} />
+            <Route path="/admin/local-news" element={<AdminLocalNewsPage />} />
           </Routes>
         </main>
         <Footer />

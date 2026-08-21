@@ -1353,3 +1353,9 @@
   border-radius: 10px;
   background: #fff;
 }
+
+.local-news__desc {
+  color: var(--muted);
+  font-size: 14.5px;
+  margin: -12px 0 24px;
+}
