@@ -84,7 +84,10 @@ async function fetchNaverNews() {
       'X-Naver-Client-Secret': process.env.NAVER_CLIENT_SECRET,
     },
   })
-  if (!res.ok) throw new Error(`naver fetch failed: ${res.status}`)
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`naver fetch failed: ${res.status} ${body}`)
+  }
   const json = await res.json()
 
   return (json.items || []).map((item) => {
