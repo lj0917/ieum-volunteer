@@ -78,10 +78,10 @@ async function fetchNaverNews() {
   if (!process.env.NAVER_CLIENT_ID || !process.env.NAVER_CLIENT_SECRET) return []
 
   const params = new URLSearchParams({ query: NAVER_QUERY, display: '30', sort: 'date' })
-  const res = await fetch(`https://openapi.naver.com/v1/search/news.json?${params}`, {
+  const res = await fetch(`https://naverapihub.apigw.ntruss.com/search/v1/news?${params}`, {
     headers: {
-      'X-Naver-Client-Id': process.env.NAVER_CLIENT_ID,
-      'X-Naver-Client-Secret': process.env.NAVER_CLIENT_SECRET,
+      'X-NCP-APIGW-API-KEY-ID': process.env.NAVER_CLIENT_ID,
+      'X-NCP-APIGW-API-KEY': process.env.NAVER_CLIENT_SECRET,
     },
   })
   if (!res.ok) {
