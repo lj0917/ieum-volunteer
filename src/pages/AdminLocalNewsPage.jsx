@@ -52,8 +52,10 @@ function AdminLocalNewsPage() {
         headers: { Authorization: `Bearer ${token}` },
       })
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error || '가져오기에 실패했습니다.')
-      setResultMsg(`북구청 공지 ${json.bukgu}건, 뉴스 ${json.naver}건 확인 완료`)
+      if (!res.ok) throw new Error(`${json.error || '가져오기에 실패했습니다.'}${json.detail ? ` (${json.detail})` : ''}`)
+      let msg = `북구청 공지 ${json.bukgu}건, 뉴스 ${json.naver}건 확인 완료`
+      if (json.errors) msg += ` (일부 실패: ${JSON.stringify(json.errors)})`
+      setResultMsg(msg)
       loadIssues()
     } catch (e) {
       setError(e.message)

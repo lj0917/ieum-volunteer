@@ -113,15 +113,17 @@ export default async function handler(req, res) {
     return
   }
 
-  try {
-    const [bukguRows, naverRows] = await Promise.all([fetchBukguNotices(), fetchNaverNews()])
-    const rows = [...bukguRows, ...naverRows]
+  const [bukguResult, naverResult] = await Promise.allSettled([fetchBukguNotices(), fetchNaverNews()])
 
-    if (rows.length === 0) {
-      res.status(200).json({ ok: true, count: 0 })
-      return
-    }
+  const bukguRows = bukguResult.status === 'fulfilled' ? bukguResult.value : []
+  const naverRows = naverResult.status === 'fulfilled' ? naverResult.value : []
+  const rows = [...bukguRows, ...naverRows]
 
+  const errors = {}
+  if (bukguResult.status === 'rejected') errors.bukgu = bukguResult.reason?.message || String(bukguResult.reason)
+  if (naverResult.status === 'rejected') errors.naver = naverResult.reason?.message || String(naverResult.reason)
+
+  if (rows.length > 0) {
     const { error: upsertError } = await adminClient
       .from('local_issues')
       .upsert(rows, { onConflict: 'source,external_id', ignoreDuplicates: false })
@@ -130,9 +132,18 @@ export default async function handler(req, res) {
       res.status(500).json({ error: '저장에 실패했습니다.', detail: upsertError.message })
       return
     }
-
-    res.status(200).json({ ok: true, count: rows.length, bukgu: bukguRows.length, naver: naverRows.length })
-  } catch (err) {
-    res.status(500).json({ error: '가져오기에 실패했습니다.', detail: err.message })
   }
+
+  if (Object.keys(errors).length > 0 && rows.length === 0) {
+    res.status(500).json({ error: '가져오기에 실패했습니다.', detail: JSON.stringify(errors) })
+    return
+  }
+
+  res.status(200).json({
+    ok: true,
+    count: rows.length,
+    bukgu: bukguRows.length,
+    naver: naverRows.length,
+    errors: Object.keys(errors).length > 0 ? errors : undefined,
+  })
 }
