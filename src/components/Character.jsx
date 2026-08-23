@@ -1,6 +1,18 @@
-import characterSheet from '../assets/images/character-sheet.webp'
+import cheer from '../assets/images/mascot-cheer.webp'
+import megaphone from '../assets/images/mascot-megaphone2.webp'
+import shield from '../assets/images/mascot-shield.webp'
+import hugheart from '../assets/images/mascot-hugheart.webp'
+import plant from '../assets/images/mascot-plant.webp'
+import cheerheart from '../assets/images/mascot-cheerheart.webp'
 
-const POSES = ['반가워요!', '마음을 이어요!', '폭력은 NO!', '함께해요!', '마을을 지켜요!']
+const POSES = [
+  { img: cheer, label: '반가워요!' },
+  { img: megaphone, label: '함께 외쳐요!' },
+  { img: shield, label: '안전을 지켜요!' },
+  { img: hugheart, label: '마음을 이어요!' },
+  { img: plant, label: '환경을 가꿔요!' },
+  { img: cheerheart, label: '응원할게요!' },
+]
 
 function Character() {
   return (
@@ -15,15 +27,14 @@ function Character() {
           </p>
         </div>
 
-        <div className="character__sheet">
-          <img src={characterSheet} alt="이음봉사단 캐릭터 이음이의 다양한 포즈" />
-        </div>
-
-        <ul className="character__poses">
+        <div className="character__grid">
           {POSES.map((pose) => (
-            <li key={pose}>{pose}</li>
+            <figure key={pose.label} className="character__grid-item">
+              <img src={pose.img} alt={`이음이 - ${pose.label}`} />
+              <figcaption>{pose.label}</figcaption>
+            </figure>
           ))}
-        </ul>
+        </div>
       </div>
     </section>
   )

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
+import EmptyState from '../components/EmptyState.jsx'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
@@ -43,7 +44,7 @@ function NoticesListPage() {
         {loading && <p className="board-empty">불러오는 중…</p>}
         {error && <p className="board-empty">{error}</p>}
         {!loading && !error && notices.length === 0 && (
-          <p className="board-empty">등록된 공지사항이 없습니다.</p>
+          <EmptyState message="등록된 공지사항이 없습니다." />
         )}
 
         <ul className="board-list">

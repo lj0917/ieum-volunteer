@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 import bannerGallery from '../assets/images/banner-gallery.webp'
 
 const BUCKET = 'activity-photos'
@@ -146,7 +147,7 @@ function GalleryPage() {
         {error && <p className="auth-form__error">{error}</p>}
 
         {loading && <p className="board-empty">불러오는 중…</p>}
-        {!loading && photos.length === 0 && <p className="board-empty">아직 등록된 사진이 없습니다.</p>}
+        {!loading && photos.length === 0 && <EmptyState message="아직 등록된 사진이 없습니다." />}
 
         <div className="photo-grid">
           {photos.map((p) => (

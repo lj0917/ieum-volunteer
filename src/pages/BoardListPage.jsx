@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 import bannerBoard from '../assets/images/banner-board.webp'
 
 function formatDate(iso) {
@@ -59,7 +60,7 @@ function BoardListPage() {
         {loading && <p className="board-empty">불러오는 중…</p>}
         {error && <p className="board-empty">{error}</p>}
         {!loading && !error && posts.length === 0 && (
-          <p className="board-empty">아직 등록된 글이 없습니다. 첫 글을 남겨보세요!</p>
+          <EmptyState message="아직 등록된 글이 없습니다. 첫 글을 남겨보세요!" />
         )}
 
         <ul className="board-list">

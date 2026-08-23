@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient.js'
+import EmptyState from '../components/EmptyState.jsx'
 
 const SOURCE_LABEL = { bukgu: '북구청 공지', naver: '뉴스' }
 
@@ -65,7 +66,7 @@ function LocalNewsPage() {
         {loading && <p className="board-empty">불러오는 중…</p>}
         {error && <p className="board-empty">{error}</p>}
         {!loading && !error && filtered.length === 0 && (
-          <p className="board-empty">아직 수집된 소식이 없습니다.</p>
+          <EmptyState message="아직 수집된 소식이 없습니다." />
         )}
 
         <ul className="board-list">

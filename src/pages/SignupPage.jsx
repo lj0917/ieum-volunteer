@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import cheerheart from '../assets/images/mascot-cheerheart.webp'
 
 function SignupPage() {
   const { user } = useAuth()
@@ -47,6 +48,7 @@ function SignupPage() {
       <section className="section auth-page">
         <div className="container auth-page__inner">
           <div className="auth-card">
+            <img src={cheerheart} alt="" aria-hidden="true" className="auth-card__mascot" />
             <h1>가입 완료</h1>
             <p className="auth-card__sub">
               {email}로 인증 메일을 보내드렸습니다. 메일함에서 인증 링크를 확인한 뒤 로그인해주세요.

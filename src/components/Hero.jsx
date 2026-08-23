@@ -1,4 +1,4 @@
-import characterHero from '../assets/images/character-sheet.webp'
+import characterHero from '../assets/images/mascot-cheer.webp'
 import logoInfinity from '../assets/images/logo-infinity.webp'
 
 function Hero() {

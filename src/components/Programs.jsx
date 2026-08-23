@@ -1,7 +1,11 @@
+import hugheart from '../assets/images/mascot-hugheart.webp'
+import shield from '../assets/images/mascot-shield.webp'
+import plant from '../assets/images/mascot-plant.webp'
+
 const PROGRAMS = [
   {
     tag: '가',
-    icon: '🤝',
+    icon: hugheart,
     title: '네트워크 구성 및 회의',
     meta: '정기 회의 2회 · 역량강화교육 1회',
     items: [
@@ -12,7 +16,7 @@ const PROGRAMS = [
   },
   {
     tag: '나',
-    icon: '🚸',
+    icon: shield,
     title: '생활안전캠페인',
     meta: '연 2회 · 북구관내 중·고등학교',
     items: [
@@ -25,7 +29,7 @@ const PROGRAMS = [
   },
   {
     tag: '다',
-    icon: '🌍',
+    icon: plant,
     title: '환경정화활동',
     meta: '연 2회 · 학교 및 지역사회 주변',
     items: [
@@ -53,7 +57,7 @@ function Programs() {
             <article className="program-card" key={p.tag}>
               <div className="program-card__head">
                 <span className="program-card__tag">{p.tag}</span>
-                <span className="program-card__icon">{p.icon}</span>
+                <img className="program-card__icon" src={p.icon} alt="" aria-hidden="true" />
               </div>
               <h3>{p.title}</h3>
               <p className="program-card__meta">{p.meta}</p>
