@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { supabase } from '../lib/supabaseClient.js'
 import AdminNav from '../components/AdminNav.jsx'
@@ -22,6 +22,8 @@ function AdminLocalNewsPage() {
   const [error, setError] = useState('')
   const [refreshing, setRefreshing] = useState(false)
   const [resultMsg, setResultMsg] = useState('')
+  const [sourceFilter, setSourceFilter] = useState('')
+  const [keyword, setKeyword] = useState('')
 
   const loadIssues = async () => {
     setLoading(true)
@@ -62,6 +64,15 @@ function AdminLocalNewsPage() {
     }
     setRefreshing(false)
   }
+
+  const filtered = useMemo(() => {
+    const kw = keyword.trim().toLowerCase()
+    return issues.filter((i) => {
+      if (sourceFilter && i.source !== sourceFilter) return false
+      if (kw && !i.title.toLowerCase().includes(kw)) return false
+      return true
+    })
+  }, [issues, sourceFilter, keyword])
 
   const deleteIssue = async (id) => {
     if (!window.confirm('이 항목을 목록에서 삭제할까요?')) return
@@ -109,6 +120,23 @@ function AdminLocalNewsPage() {
         {loading && <p className="board-empty">불러오는 중…</p>}
 
         {!loading && (
+          <div className="hours-toolbar">
+            <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)}>
+              <option value="">전체</option>
+              <option value="bukgu">북구청 공지</option>
+              <option value="naver">뉴스</option>
+            </select>
+            <input
+              type="text"
+              placeholder="제목 검색"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              className="local-news__search"
+            />
+          </div>
+        )}
+
+        {!loading && (
           <div className="admin-table__wrap">
             <table className="admin-table">
               <thead>
@@ -120,7 +148,7 @@ function AdminLocalNewsPage() {
                 </tr>
               </thead>
               <tbody>
-                {issues.map((i) => (
+                {filtered.map((i) => (
                   <tr key={i.id}>
                     <td>{i.category || SOURCE_LABEL[i.source] || i.source}</td>
                     <td>
@@ -140,10 +168,12 @@ function AdminLocalNewsPage() {
                     </td>
                   </tr>
                 ))}
-                {issues.length === 0 && (
+                {filtered.length === 0 && (
                   <tr>
                     <td colSpan={4} className="board-empty">
-                      수집된 소식이 없습니다. "지금 새로고침"을 눌러주세요.
+                      {issues.length === 0
+                        ? '수집된 소식이 없습니다. "지금 새로고침"을 눌러주세요.'
+                        : '검색 결과가 없습니다.'}
                     </td>
                   </tr>
                 )}

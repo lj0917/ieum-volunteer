@@ -14,6 +14,7 @@ function LocalNewsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [sourceFilter, setSourceFilter] = useState('')
+  const [keyword, setKeyword] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -36,10 +37,14 @@ function LocalNewsPage() {
     }
   }, [])
 
-  const filtered = useMemo(
-    () => (sourceFilter ? issues.filter((i) => i.source === sourceFilter) : issues),
-    [issues, sourceFilter],
-  )
+  const filtered = useMemo(() => {
+    const kw = keyword.trim().toLowerCase()
+    return issues.filter((i) => {
+      if (sourceFilter && i.source !== sourceFilter) return false
+      if (kw && !i.title.toLowerCase().includes(kw)) return false
+      return true
+    })
+  }, [issues, sourceFilter, keyword])
 
   return (
     <section className="section board-page">
@@ -61,6 +66,13 @@ function LocalNewsPage() {
             <option value="bukgu">북구청 공지</option>
             <option value="naver">뉴스</option>
           </select>
+          <input
+            type="text"
+            placeholder="제목 검색"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            className="local-news__search"
+          />
         </div>
 
         {loading && <p className="board-empty">불러오는 중…</p>}
