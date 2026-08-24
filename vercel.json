@@ -1,4 +1,3 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
-  "crons": [{ "path": "/api/refresh-local-issues", "schedule": "0 0 * * *" }]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
