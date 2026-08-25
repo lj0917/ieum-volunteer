@@ -459,6 +459,43 @@
   }
 }
 
+/* Knit goods */
+.knit-goods__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.knit-goods__item {
+  margin: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.knit-goods__item img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+}
+
+.knit-goods__item figcaption {
+  padding: 12px 16px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--blue-dark);
+}
+
+@media (max-width: 860px) {
+  .knit-goods__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* Pamphlet */
 .pamphlet__frame {
   display: block;

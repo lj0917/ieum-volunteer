@@ -2,6 +2,7 @@ import Hero from '../components/Hero.jsx'
 import About from '../components/About.jsx'
 import Programs from '../components/Programs.jsx'
 import Character from '../components/Character.jsx'
+import KnitGoods from '../components/KnitGoods.jsx'
 import Pamphlet from '../components/Pamphlet.jsx'
 import Effects from '../components/Effects.jsx'
 
@@ -12,6 +13,7 @@ function HomePage() {
       <About />
       <Programs />
       <Character />
+      <KnitGoods />
       <Pamphlet />
       <Effects />
     </>
