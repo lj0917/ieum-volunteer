@@ -59,24 +59,40 @@ function RichTextEditor({ content, onChange, placeholder }) {
   const onPickImage = () => fileInputRef.current?.click()
 
   const onImageSelected = async (e) => {
-    const file = e.target.files?.[0]
+    const files = Array.from(e.target.files || [])
     e.target.value = ''
-    if (!file) return
+    if (files.length === 0) return
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      window.alert('PNG, JPG, WEBP, GIF 형식만 업로드할 수 있습니다.')
-      return
+    const rejected = []
+    const valid = files.filter((file) => {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        rejected.push(`${file.name} (지원하지 않는 형식)`)
+        return false
+      }
+      if (file.size > MAX_IMAGE_SIZE) {
+        rejected.push(`${file.name} (5MB 초과)`)
+        return false
+      }
+      return true
+    })
+
+    if (rejected.length > 0) {
+      window.alert(`다음 파일은 제외됩니다:\n${rejected.join('\n')}`)
     }
-    if (file.size > MAX_IMAGE_SIZE) {
-      window.alert('이미지 용량은 5MB 이하만 가능합니다.')
-      return
+    if (valid.length === 0) return
+
+    const failed = []
+    for (const file of valid) {
+      try {
+        const url = await uploadImage(file)
+        editor.chain().focus().setImage({ src: url }).run()
+      } catch {
+        failed.push(file.name)
+      }
     }
 
-    try {
-      const url = await uploadImage(file)
-      editor.chain().focus().setImage({ src: url }).run()
-    } catch {
-      window.alert('이미지 업로드에 실패했습니다.')
+    if (failed.length > 0) {
+      window.alert(`다음 이미지 업로드에 실패했습니다:\n${failed.join('\n')}`)
     }
   }
 
@@ -166,6 +182,7 @@ function RichTextEditor({ content, onChange, placeholder }) {
           ref={fileInputRef}
           type="file"
           accept="image/png,image/jpeg,image/webp,image/gif"
+          multiple
           hidden
           onChange={onImageSelected}
         />

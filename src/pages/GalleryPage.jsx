@@ -13,12 +13,28 @@ function publicUrlFor(path) {
   return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
 }
 
+async function uploadOnePhoto(file, caption, uploaderName, uploaderId) {
+  const ext = file.name.split('.').pop()
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+
+  const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, file)
+  if (uploadError) throw uploadError
+
+  const { error: insertError } = await supabase.from('photos').insert({
+    storage_path: path,
+    caption,
+    uploader_name: uploaderName,
+    uploader_id: uploaderId,
+  })
+  if (insertError) throw insertError
+}
+
 function GalleryPage() {
   const { user, displayName, approved } = useAuth()
   const [photos, setPhotos] = useState([])
   const [loading, setLoading] = useState(true)
 
-  const [file, setFile] = useState(null)
+  const [files, setFiles] = useState([])
   const [caption, setCaption] = useState('')
   const [error, setError] = useState('')
   const [uploading, setUploading] = useState(false)
@@ -39,28 +55,35 @@ function GalleryPage() {
   }, [])
 
   const onFileChange = (e) => {
-    const f = e.target.files?.[0]
+    const selected = Array.from(e.target.files || [])
     setError('')
-    if (!f) {
-      setFile(null)
+    if (selected.length === 0) {
+      setFiles([])
       return
     }
-    if (!ALLOWED_TYPES.includes(f.type)) {
-      setError('PNG, JPG, WEBP, GIF 형식만 업로드할 수 있습니다.')
-      setFile(null)
-      return
+
+    const rejected = []
+    const valid = selected.filter((f) => {
+      if (!ALLOWED_TYPES.includes(f.type)) {
+        rejected.push(`${f.name} (지원하지 않는 형식)`)
+        return false
+      }
+      if (f.size > MAX_SIZE) {
+        rejected.push(`${f.name} (5MB 초과)`)
+        return false
+      }
+      return true
+    })
+
+    if (rejected.length > 0) {
+      setError(`다음 파일은 제외됩니다: ${rejected.join(', ')}`)
     }
-    if (f.size > MAX_SIZE) {
-      setError('파일 용량은 5MB 이하만 가능합니다.')
-      setFile(null)
-      return
-    }
-    setFile(f)
+    setFiles(valid)
   }
 
   const onSubmit = async (e) => {
     e.preventDefault()
-    if (!file) {
+    if (files.length === 0) {
       setError('사진을 선택해주세요.')
       return
     }
@@ -68,32 +91,18 @@ function GalleryPage() {
     setUploading(true)
     setError('')
 
-    const ext = file.name.split('.').pop()
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-
-    const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, file)
-
-    if (uploadError) {
-      setUploading(false)
-      setError('업로드에 실패했습니다. 잠시 후 다시 시도해주세요.')
-      return
-    }
-
-    const { error: insertError } = await supabase.from('photos').insert({
-      storage_path: path,
-      caption,
-      uploader_name: displayName,
-      uploader_id: user.id,
-    })
+    const results = await Promise.allSettled(
+      files.map((f) => uploadOnePhoto(f, caption, displayName, user.id)),
+    )
+    const failedCount = results.filter((r) => r.status === 'rejected').length
 
     setUploading(false)
 
-    if (insertError) {
-      setError('사진 등록에 실패했습니다.')
-      return
+    if (failedCount > 0) {
+      setError(`${failedCount}장 업로드에 실패했습니다. (성공 ${files.length - failedCount}장)`)
     }
 
-    setFile(null)
+    setFiles([])
     setCaption('')
     e.target.reset()
     loadPhotos()
@@ -123,8 +132,13 @@ function GalleryPage() {
         {user && approved && (
           <form onSubmit={onSubmit} className="upload-form">
             <label className="upload-form__file">
-              사진 선택
-              <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={onFileChange} />
+              {files.length > 0 ? `${files.length}장 선택됨` : '사진 선택 (여러 장 가능)'}
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                multiple
+                onChange={onFileChange}
+              />
             </label>
             <input
               type="text"
