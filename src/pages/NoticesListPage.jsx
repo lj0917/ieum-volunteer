@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
 import EmptyState from '../components/EmptyState.jsx'
+import bannerNotices from '../assets/images/banner-notices.webp'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
@@ -34,6 +35,8 @@ function NoticesListPage() {
   return (
     <section className="section board-page">
       <div className="container">
+        <img src={bannerNotices} alt="" className="page-banner" />
+
         <div className="page-head">
           <div>
             <span className="eyebrow">공지사항</span>

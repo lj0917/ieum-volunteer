@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient.js'
 import EmptyState from '../components/EmptyState.jsx'
+import bannerLocalNews from '../assets/images/banner-localnews.webp'
 
 const SOURCE_LABEL = { bukgu: '북구청 공지', naver: '뉴스' }
 
@@ -49,6 +50,8 @@ function LocalNewsPage() {
   return (
     <section className="section board-page">
       <div className="container">
+        <img src={bannerLocalNews} alt="" className="page-banner" />
+
         <div className="page-head">
           <div>
             <span className="eyebrow">지역소식</span>
