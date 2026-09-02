@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import DOMPurify from 'dompurify'
 import { supabase } from '../lib/supabaseClient.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleString('ko-KR', {
@@ -16,7 +17,7 @@ function formatDate(iso) {
 
 function BoardDetailPage() {
   const { id } = useParams()
-  const { user, displayName, approved } = useAuth()
+  const { user, displayName, approved, loading: authLoading } = useAuth()
   const navigate = useNavigate()
 
   const [post, setPost] = useState(null)
@@ -29,6 +30,7 @@ function BoardDetailPage() {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
+    if (!user) return
     let cancelled = false
 
     async function load() {
@@ -52,7 +54,7 @@ function BoardDetailPage() {
     return () => {
       cancelled = true
     }
-  }, [id])
+  }, [id, user])
 
   const deletePost = async () => {
     if (!window.confirm('이 글을 삭제할까요?')) return
@@ -84,6 +86,31 @@ function BoardDetailPage() {
     }
     setComments((prev) => [...prev, data])
     setCommentText('')
+  }
+
+  if (authLoading) {
+    return (
+      <section className="section board-page">
+        <div className="container">
+          <p className="board-empty">불러오는 중…</p>
+        </div>
+      </section>
+    )
+  }
+
+  if (!user) {
+    return (
+      <section className="section board-page">
+        <div className="container">
+          <EmptyState message="로그인 후 이용할 수 있는 메뉴입니다." />
+          <p style={{ textAlign: 'center' }}>
+            <Link to="/login" className="btn btn-primary">
+              로그인하러 가기
+            </Link>
+          </p>
+        </div>
+      </section>
+    )
   }
 
   if (loading) {
@@ -182,7 +209,7 @@ function BoardDetailPage() {
             {comments.length === 0 && <li className="board-empty">첫 댓글을 남겨보세요.</li>}
           </ul>
 
-          {user && approved && (
+          {approved && (
             <form onSubmit={onCommentSubmit} className="comment-form">
               <textarea
                 required
@@ -197,12 +224,7 @@ function BoardDetailPage() {
               </button>
             </form>
           )}
-          {user && !approved && <p className="board-empty">관리자 승인 후 댓글을 남길 수 있습니다.</p>}
-          {!user && (
-            <p className="board-empty">
-              <Link to="/login">로그인</Link> 후 댓글을 남길 수 있습니다.
-            </p>
-          )}
+          {!approved && <p className="board-empty">관리자 승인 후 댓글을 남길 수 있습니다.</p>}
         </div>
       </div>
     </section>

@@ -10,12 +10,13 @@ function formatDate(iso) {
 }
 
 function BoardListPage() {
-  const { user, approved } = useAuth()
+  const { user, approved, loading: authLoading } = useAuth()
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
+    if (!user) return
     let cancelled = false
 
     supabase
@@ -32,7 +33,39 @@ function BoardListPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [user])
+
+  if (authLoading) {
+    return (
+      <section className="section board-page">
+        <div className="container">
+          <p className="board-empty">불러오는 중…</p>
+        </div>
+      </section>
+    )
+  }
+
+  if (!user) {
+    return (
+      <section className="section board-page">
+        <div className="container">
+          <img src={bannerBoard} alt="" className="page-banner" />
+          <div className="page-head">
+            <div>
+              <span className="eyebrow">게시판</span>
+              <h1>이음봉사단 게시판</h1>
+            </div>
+          </div>
+          <EmptyState message="로그인 후 이용할 수 있는 메뉴입니다." />
+          <p style={{ textAlign: 'center' }}>
+            <Link to="/login" className="btn btn-primary">
+              로그인하러 가기
+            </Link>
+          </p>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="section board-page">
@@ -44,17 +77,12 @@ function BoardListPage() {
             <span className="eyebrow">게시판</span>
             <h1>이음봉사단 게시판</h1>
           </div>
-          {user && approved && (
+          {approved && (
             <Link to="/board/new" className="btn btn-primary">
               글쓰기
             </Link>
           )}
-          {user && !approved && <span className="pending-badge">승인 대기중</span>}
-          {!user && (
-            <Link to="/login" className="btn btn-outline">
-              로그인 후 글쓰기
-            </Link>
-          )}
+          {!approved && <span className="pending-badge">승인 대기중</span>}
         </div>
 
         {loading && <p className="board-empty">불러오는 중…</p>}

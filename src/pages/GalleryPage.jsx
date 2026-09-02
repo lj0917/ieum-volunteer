@@ -30,7 +30,7 @@ async function uploadOnePhoto(file, caption, uploaderName, uploaderId) {
 }
 
 function GalleryPage() {
-  const { user, displayName, approved } = useAuth()
+  const { user, displayName, approved, loading: authLoading } = useAuth()
   const [photos, setPhotos] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -51,8 +51,9 @@ function GalleryPage() {
   }
 
   useEffect(() => {
+    if (!user) return
     loadPhotos()
-  }, [])
+  }, [user])
 
   const onFileChange = (e) => {
     const selected = Array.from(e.target.files || [])
@@ -117,6 +118,38 @@ function GalleryPage() {
     setPhotos((prev) => prev.filter((p) => p.id !== photo.id))
   }
 
+  if (authLoading) {
+    return (
+      <section className="section gallery-page">
+        <div className="container">
+          <p className="board-empty">불러오는 중…</p>
+        </div>
+      </section>
+    )
+  }
+
+  if (!user) {
+    return (
+      <section className="section gallery-page">
+        <div className="container">
+          <img src={bannerGallery} alt="" className="page-banner" />
+          <div className="page-head">
+            <div>
+              <span className="eyebrow">활동 사진첩</span>
+              <h1>이음봉사단 활동 모습</h1>
+            </div>
+          </div>
+          <EmptyState message="로그인 후 이용할 수 있는 메뉴입니다." />
+          <p style={{ textAlign: 'center' }}>
+            <Link to="/login" className="btn btn-primary">
+              로그인하러 가기
+            </Link>
+          </p>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="section gallery-page">
       <div className="container">
@@ -129,7 +162,7 @@ function GalleryPage() {
           </div>
         </div>
 
-        {user && approved && (
+        {approved && (
           <form onSubmit={onSubmit} className="upload-form">
             <label className="upload-form__file">
               {files.length > 0 ? `${files.length}장 선택됨` : '사진 선택 (여러 장 가능)'}
@@ -152,12 +185,7 @@ function GalleryPage() {
             </button>
           </form>
         )}
-        {user && !approved && <p className="board-empty">관리자 승인 후 사진을 업로드할 수 있습니다.</p>}
-        {!user && (
-          <p className="board-empty">
-            <Link to="/login">로그인</Link> 후 사진을 업로드할 수 있습니다.
-          </p>
-        )}
+        {!approved && <p className="board-empty">관리자 승인 후 사진을 업로드할 수 있습니다.</p>}
         {error && <p className="auth-form__error">{error}</p>}
 
         {loading && <p className="board-empty">불러오는 중…</p>}

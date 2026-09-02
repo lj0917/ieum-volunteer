@@ -7,8 +7,8 @@ const NAV_LINKS = [
   { href: '/#about', label: '소개' },
   { href: '/#programs', label: '주요 사업' },
   { href: '/notices', label: '공지사항' },
-  { href: '/board', label: '게시판' },
-  { href: '/gallery', label: '사진첩' },
+  { href: '/board', label: '게시판', authOnly: true },
+  { href: '/gallery', label: '사진첩', authOnly: true },
   { href: '/local-news', label: '북구소식' },
 ]
 
@@ -24,9 +24,10 @@ function Header() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  const baseLinks = NAV_LINKS.filter((link) => !link.authOnly || user)
   const navLinks = isAdmin
-    ? [...NAV_LINKS, { href: '/support', label: '후원' }, { href: '/admin/members', label: '관리자' }]
-    : NAV_LINKS
+    ? [...baseLinks, { href: '/support', label: '후원' }, { href: '/admin/members', label: '관리자' }]
+    : baseLinks
 
   return (
     <header className={`site-header ${scrolled ? 'is-scrolled' : ''}`}>
