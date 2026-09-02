@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
 import { useAuth } from '../context/AuthContext.jsx'
@@ -13,7 +13,31 @@ function publicUrlFor(path) {
   return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
 }
 
-async function uploadOnePhoto(file, caption, uploaderName, uploaderId) {
+function sortKeyOf(photo) {
+  return photo.activity_date || photo.created_at
+}
+
+function groupByMonth(photos) {
+  const sorted = [...photos].sort((a, b) => (sortKeyOf(a) < sortKeyOf(b) ? 1 : -1))
+  const groups = []
+  const byKey = new Map()
+
+  for (const p of sorted) {
+    const d = new Date(sortKeyOf(p))
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    let group = byKey.get(key)
+    if (!group) {
+      group = { key, label: `${d.getFullYear()}년 ${d.getMonth() + 1}월`, items: [] }
+      byKey.set(key, group)
+      groups.push(group)
+    }
+    group.items.push(p)
+  }
+
+  return groups
+}
+
+async function uploadOnePhoto(file, { caption, activityItemId, activityDate, uploaderName, uploaderId }) {
   const ext = file.name.split('.').pop()
   const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
 
@@ -23,6 +47,8 @@ async function uploadOnePhoto(file, caption, uploaderName, uploaderId) {
   const { error: insertError } = await supabase.from('photos').insert({
     storage_path: path,
     caption,
+    activity_item_id: activityItemId || null,
+    activity_date: activityDate || null,
     uploader_name: uploaderName,
     uploader_id: uploaderId,
   })
@@ -32,28 +58,48 @@ async function uploadOnePhoto(file, caption, uploaderName, uploaderId) {
 function GalleryPage() {
   const { user, displayName, approved, loading: authLoading } = useAuth()
   const [photos, setPhotos] = useState([])
+  const [activityItems, setActivityItems] = useState([])
   const [loading, setLoading] = useState(true)
 
   const [files, setFiles] = useState([])
   const [caption, setCaption] = useState('')
+  const [activityItemId, setActivityItemId] = useState('')
+  const [activityDate, setActivityDate] = useState('')
   const [error, setError] = useState('')
   const [uploading, setUploading] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
 
-  const loadPhotos = async () => {
+  const [filterActivityItemId, setFilterActivityItemId] = useState('')
+
+  const loadAll = async () => {
     setLoading(true)
-    const { data, error: fetchError } = await supabase
-      .from('photos')
-      .select('*')
-      .order('created_at', { ascending: false })
-    if (!fetchError) setPhotos(data)
+    const [{ data: photoData, error: fetchError }, { data: itemData }] = await Promise.all([
+      supabase.from('photos').select('*').order('created_at', { ascending: false }),
+      supabase.from('activity_items').select('*').order('name'),
+    ])
+    if (!fetchError) setPhotos(photoData)
+    setActivityItems(itemData || [])
     setLoading(false)
   }
 
   useEffect(() => {
     if (!user) return
-    loadPhotos()
+    loadAll()
   }, [user])
+
+  const activityNameById = useMemo(() => {
+    const map = {}
+    activityItems.forEach((a) => {
+      map[a.id] = a.name
+    })
+    return map
+  }, [activityItems])
+
+  const filteredPhotos = filterActivityItemId
+    ? photos.filter((p) => p.activity_item_id === filterActivityItemId)
+    : photos
+
+  const groups = useMemo(() => groupByMonth(filteredPhotos), [filteredPhotos])
 
   const onFileChange = (e) => {
     const selected = Array.from(e.target.files || [])
@@ -93,7 +139,15 @@ function GalleryPage() {
     setError('')
 
     const results = await Promise.allSettled(
-      files.map((f) => uploadOnePhoto(f, caption, displayName, user.id)),
+      files.map((f) =>
+        uploadOnePhoto(f, {
+          caption,
+          activityItemId,
+          activityDate,
+          uploaderName: displayName,
+          uploaderId: user.id,
+        }),
+      ),
     )
     const failedCount = results.filter((r) => r.status === 'rejected').length
 
@@ -105,8 +159,10 @@ function GalleryPage() {
 
     setFiles([])
     setCaption('')
+    setActivityItemId('')
+    setActivityDate('')
     e.target.reset()
-    loadPhotos()
+    loadAll()
   }
 
   const onDelete = async (photo) => {
@@ -173,6 +229,15 @@ function GalleryPage() {
                 onChange={onFileChange}
               />
             </label>
+            <select value={activityItemId} onChange={(e) => setActivityItemId(e.target.value)}>
+              <option value="">활동 항목 (선택)</option>
+              {activityItems.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+            <input type="date" value={activityDate} onChange={(e) => setActivityDate(e.target.value)} />
             <input
               type="text"
               maxLength={80}
@@ -188,32 +253,59 @@ function GalleryPage() {
         {!approved && <p className="board-empty">관리자 승인 후 사진을 업로드할 수 있습니다.</p>}
         {error && <p className="auth-form__error">{error}</p>}
 
-        {loading && <p className="board-empty">불러오는 중…</p>}
-        {!loading && photos.length === 0 && <EmptyState message="아직 등록된 사진이 없습니다." />}
-
-        <div className="photo-grid">
-          {photos.map((p) => (
-            <figure key={p.id} className="photo-grid__item">
-              <img src={publicUrlFor(p.storage_path)} alt={p.caption || '이음봉사단 활동 사진'} loading="lazy" />
-              {(p.caption || p.uploader_name) && (
-                <figcaption>
-                  {p.caption && <span>{p.caption}</span>}
-                  <span className="photo-grid__uploader">{p.uploader_name}</span>
-                </figcaption>
-              )}
-              {Boolean(user) && user.id === p.uploader_id && (
-                <button
-                  type="button"
-                  className="photo-grid__delete"
-                  disabled={deletingId === p.id}
-                  onClick={() => onDelete(p)}
-                >
-                  삭제
-                </button>
-              )}
-            </figure>
-          ))}
+        <div className="hours-toolbar">
+          <select value={filterActivityItemId} onChange={(e) => setFilterActivityItemId(e.target.value)}>
+            <option value="">전체 활동</option>
+            {activityItems.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </select>
         </div>
+
+        {loading && <p className="board-empty">불러오는 중…</p>}
+        {!loading && filteredPhotos.length === 0 && <EmptyState message="아직 등록된 사진이 없습니다." />}
+
+        {groups.map((group) => (
+          <div key={group.key} className="photo-group">
+            <h2 className="photo-group__label">{group.label}</h2>
+            <div className="photo-grid">
+              {group.items.map((p) => (
+                <figure key={p.id} className="photo-grid__item">
+                  <img
+                    src={publicUrlFor(p.storage_path)}
+                    alt={p.caption || '이음봉사단 활동 사진'}
+                    loading="lazy"
+                  />
+                  {(p.caption || p.activity_item_id || p.uploader_name) && (
+                    <figcaption>
+                      <span>
+                        {p.activity_item_id && (
+                          <span className="photo-grid__activity">
+                            {activityNameById[p.activity_item_id]}
+                          </span>
+                        )}
+                        {p.caption}
+                      </span>
+                      <span className="photo-grid__uploader">{p.uploader_name}</span>
+                    </figcaption>
+                  )}
+                  {Boolean(user) && user.id === p.uploader_id && (
+                    <button
+                      type="button"
+                      className="photo-grid__delete"
+                      disabled={deletingId === p.id}
+                      onClick={() => onDelete(p)}
+                    >
+                      삭제
+                    </button>
+                  )}
+                </figure>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   )
