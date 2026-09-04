@@ -6,6 +6,7 @@ import {
   annualGrantDays,
   currentLeaveYearRange,
   formatDateTime,
+  formatDeduction,
   leaveTypeLabel,
   statusLabel,
   tenureLabel,
@@ -290,7 +291,7 @@ function AdminLeavePage() {
                       <td>
                         {formatDateTime(r.start_at)} ~ {formatDateTime(r.end_at)}
                       </td>
-                      <td>{r.deduct_days}일</td>
+                      <td>{formatDeduction(r)}</td>
                       <td>{r.reason || '-'}</td>
                       <td>
                         <span className={`status-badge status-badge--${r.status}`}>{statusLabel(r.status)}</span>

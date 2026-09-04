@@ -7,9 +7,12 @@ import {
   LEAVE_TYPES,
   annualGrantDays,
   currentLeaveYearRange,
-  deductDaysFor,
+  deductDaysForRequest,
   formatDateTime,
+  formatDeduction,
+  isHourlyType,
   leaveTypeLabel,
+  leaveTypeOptionLabel,
   statusLabel,
   tenureLabel,
   usedDaysInRange,
@@ -64,6 +67,10 @@ function StaffLeavePage() {
       setError('종료 일시는 시작 일시보다 이후여야 합니다.')
       return
     }
+    if (isHourlyType(leaveType) && (new Date(endAt) - new Date(startAt)) % (60 * 60 * 1000) !== 0) {
+      setError('시간차는 1시간 단위로 입력해주세요.')
+      return
+    }
 
     setSubmitting(true)
     const { error: insertError } = await supabase.from('leave_requests').insert({
@@ -71,7 +78,7 @@ function StaffLeavePage() {
       leave_type: leaveType,
       start_at: new Date(startAt).toISOString(),
       end_at: new Date(endAt).toISOString(),
-      deduct_days: deductDaysFor(leaveType),
+      deduct_days: deductDaysForRequest(leaveType, startAt, endAt),
       reason: reason.trim() || null,
     })
     setSubmitting(false)
@@ -190,7 +197,7 @@ function StaffLeavePage() {
           <select value={leaveType} onChange={(e) => setLeaveType(e.target.value)}>
             {LEAVE_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
-                {t.label}
+                {leaveTypeOptionLabel(t.value)}
               </option>
             ))}
           </select>
@@ -229,7 +236,7 @@ function StaffLeavePage() {
                   <td>
                     {formatDateTime(r.start_at)} ~ {formatDateTime(r.end_at)}
                   </td>
-                  <td>{r.deduct_days}일</td>
+                  <td>{formatDeduction(r)}</td>
                   <td>{r.reason || '-'}</td>
                   <td>
                     <span className={`status-badge status-badge--${r.status}`}>{statusLabel(r.status)}</span>
