@@ -15,7 +15,7 @@ const NAV_LINKS = [
 function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const { user, displayName, isAdmin, signOut } = useAuth()
+  const { user, displayName, isAdmin, isStaff, signOut } = useAuth()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -25,9 +25,10 @@ function Header() {
   }, [])
 
   const baseLinks = NAV_LINKS.filter((link) => !link.authOnly || user)
+  const staffLinks = isAdmin || isStaff ? [{ href: '/leave', label: '연차/근태' }] : []
   const navLinks = isAdmin
-    ? [...baseLinks, { href: '/support', label: '후원' }, { href: '/admin/members', label: '관리자' }]
-    : baseLinks
+    ? [...baseLinks, ...staffLinks, { href: '/support', label: '후원' }, { href: '/admin/members', label: '관리자' }]
+    : [...baseLinks, ...staffLinks]
 
   return (
     <header className={`site-header ${scrolled ? 'is-scrolled' : ''}`}>

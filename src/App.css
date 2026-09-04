@@ -1358,6 +1358,10 @@
   flex: 0 0 160px;
 }
 
+.hours-form input[type='datetime-local'] {
+  flex: 0 0 200px;
+}
+
 .hours-form input[type='number'] {
   flex: 0 0 100px;
 }
@@ -1412,6 +1416,64 @@
   gap: 8px;
   font-size: 14px;
   cursor: pointer;
+}
+
+/* Leave / attendance management */
+.leave-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.leave-summary__card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.leave-summary__card span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.leave-summary__card strong {
+  font-size: 22px;
+  color: var(--ink);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+
+.status-badge--pending {
+  color: #a15c00;
+  background: #fff3e0;
+}
+
+.status-badge--approved {
+  color: var(--green-dark);
+  background: #e8f6ee;
+}
+
+.status-badge--rejected {
+  color: #c0392b;
+  background: #fdecea;
+}
+
+.status-badge__note {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--muted);
 }
 
 /* Activity items admin */

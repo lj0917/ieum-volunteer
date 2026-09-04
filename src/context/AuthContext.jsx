@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [status, setStatus] = useState('pending')
   const [isAdmin, setIsAdmin] = useState(false)
+  const [isStaff, setIsStaff] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -16,16 +17,17 @@ export function AuthProvider({ children }) {
       if (!userId) {
         setStatus('pending')
         setIsAdmin(false)
+        setIsStaff(false)
         return
       }
-      const { data } = await supabase
-        .from('profiles')
-        .select('status, is_admin')
-        .eq('id', userId)
-        .maybeSingle()
+      const [{ data }, { data: staffData }] = await Promise.all([
+        supabase.from('profiles').select('status, is_admin').eq('id', userId).maybeSingle(),
+        supabase.from('staff').select('id').eq('id', userId).maybeSingle(),
+      ])
       if (cancelled) return
       setStatus(data?.status || 'pending')
       setIsAdmin(Boolean(data?.is_admin))
+      setIsStaff(Boolean(staffData))
     }
 
     supabase.auth.getSession().then(async ({ data }) => {
@@ -60,6 +62,7 @@ export function AuthProvider({ children }) {
         status,
         approved,
         isAdmin,
+        isStaff,
         loading,
         signOut,
       }}
