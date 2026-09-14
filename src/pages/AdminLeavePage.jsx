@@ -5,12 +5,17 @@ import AdminNav from '../components/AdminNav.jsx'
 import {
   annualGrantDays,
   currentLeaveYearRange,
+  currentYearIndex,
+  formatDate,
   formatDateTime,
   formatDeduction,
   leaveTypeLabel,
+  nextYearGrant,
+  roundDays,
   statusLabel,
   tenureLabel,
   usedDaysInRange,
+  yearPeriodForIndex,
 } from '../lib/leaveCalc.js'
 
 function todayInputValue() {
@@ -34,6 +39,7 @@ function AdminLeavePage() {
 
   const [statusFilter, setStatusFilter] = useState('pending')
   const [staffFilter, setStaffFilter] = useState('')
+  const [yearIndex, setYearIndex] = useState(0)
 
   const loadAll = async () => {
     setLoading(true)
@@ -137,6 +143,21 @@ function AdminLeavePage() {
     return true
   })
 
+  const maxYearIndex = staffList.reduce((max, s) => Math.max(max, currentYearIndex(s.hire_date)), 0)
+
+  const yearRows = staffList
+    .filter((s) => currentYearIndex(s.hire_date) >= yearIndex)
+    .map((s) => {
+      const period = yearPeriodForIndex(s.hire_date, yearIndex)
+      const staffRequests = requests.filter((r) => r.staff_id === s.id)
+      return {
+        staffId: s.id,
+        name: profileNameById[s.id]?.display_name || '(탈퇴한 회원)',
+        period,
+        used: roundDays(usedDaysInRange(staffRequests, period)),
+      }
+    })
+
   if (authLoading) {
     return (
       <section className="section board-page">
@@ -208,6 +229,7 @@ function AdminLeavePage() {
                     <th>올해 부여</th>
                     <th>사용</th>
                     <th>잔여</th>
+                    <th>익년 사용가능일수</th>
                     <th>상태</th>
                     <th>관리</th>
                   </tr>
@@ -227,7 +249,8 @@ function AdminLeavePage() {
                         <td>{tenureLabel(s.hire_date)}</td>
                         <td>{granted}일</td>
                         <td>{used}일</td>
-                        <td>{granted - used}일</td>
+                        <td>{roundDays(granted - used)}일</td>
+                        <td>{nextYearGrant(s.hire_date)}일</td>
                         <td>
                           <button type="button" className="link-btn" onClick={() => toggleActive(s)}>
                             {s.active ? '재직중' : '퇴직'}
@@ -243,8 +266,52 @@ function AdminLeavePage() {
                   })}
                   {staffList.length === 0 && (
                     <tr>
-                      <td colSpan={9} className="board-empty">
+                      <td colSpan={10} className="board-empty">
                         등록된 직원이 없습니다.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <h2 className="hours-section-title">연도별 연차 사용 현황 (전체 직원)</h2>
+            <div className="hours-toolbar">
+              <select value={yearIndex} onChange={(e) => setYearIndex(Number(e.target.value))}>
+                {Array.from({ length: maxYearIndex + 1 }, (_, k) => (
+                  <option key={k} value={k}>
+                    {k + 1}년차
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="admin-table__wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>이름</th>
+                    <th>기간</th>
+                    <th>총 연차일수</th>
+                    <th>사용일수</th>
+                    <th>잔여일수</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {yearRows.map((row) => (
+                    <tr key={row.staffId}>
+                      <td>{row.name}</td>
+                      <td>
+                        {formatDate(row.period.start)} ~ {formatDate(new Date(row.period.end.getTime() - 86400000))}
+                      </td>
+                      <td>{row.period.granted}일</td>
+                      <td>{row.used}일</td>
+                      <td>{roundDays(row.period.granted - row.used)}일</td>
+                    </tr>
+                  ))}
+                  {yearRows.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="board-empty">
+                        해당 연도에 재직 중인 직원이 없습니다.
                       </td>
                     </tr>
                   )}

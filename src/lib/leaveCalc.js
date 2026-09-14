@@ -92,6 +92,51 @@ export function currentLeaveYearRange(hireDate, asOf = new Date()) {
   return { start: anniversary, end: nextAnniversary }
 }
 
+function addYears(date, years) {
+  const d = new Date(date)
+  d.setFullYear(d.getFullYear() + years)
+  return d
+}
+
+// 입사일 기준 k번째 연차 회계연도(0-based, 0=입사 1년차)의 부여일수
+export function grantForYearIndex(hireDate, k) {
+  if (k <= 0) return 11
+  return annualGrantDays(hireDate, addYears(new Date(hireDate), k))
+}
+
+// 현재 시점이 입사 후 몇 번째 연차 회계연도(0-based)에 속하는지
+export function currentYearIndex(hireDate, asOf = new Date()) {
+  const months = Math.max(0, monthsBetween(new Date(hireDate), asOf))
+  return Math.floor(months / 12)
+}
+
+// 익년(다음 회계연도)에 부여될 연차일수
+export function nextYearGrant(hireDate, asOf = new Date()) {
+  return grantForYearIndex(hireDate, currentYearIndex(hireDate, asOf) + 1)
+}
+
+// 입사일 기준 k번째 연차 회계연도 구간 [start, end)와 부여일수
+export function yearPeriodForIndex(hireDate, k) {
+  const hire = new Date(hireDate)
+  return { index: k, start: addYears(hire, k), end: addYears(hire, k + 1), granted: grantForYearIndex(hireDate, k) }
+}
+
+// 입사일부터 현재까지의 연차 회계연도별 구간 목록(오래된 순)
+export function leaveYearHistory(hireDate, asOf = new Date()) {
+  const maxIndex = currentYearIndex(hireDate, asOf)
+  const years = []
+  for (let k = 0; k <= maxIndex; k++) years.push(yearPeriodForIndex(hireDate, k))
+  return years
+}
+
+export function roundDays(n) {
+  return Math.round(n * 1000) / 1000
+}
+
+export function formatDate(value) {
+  return new Date(value).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+}
+
 // 해당 연차 회계 연도에 속하는 승인된 신청들의 차감 일수 합계
 export function usedDaysInRange(requests, range) {
   return requests
