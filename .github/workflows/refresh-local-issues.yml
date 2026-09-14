@@ -11,7 +11,14 @@ jobs:
     steps:
       - name: Call refresh-local-issues API
         run: |
-          curl --fail --show-error --silent \
+          http_code=$(curl --show-error --silent \
+            -o response.json -w "%{http_code}" \
             -X POST \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "https://ieum-volunteer.vercel.app/api/refresh-local-issues"
+            "https://ieum-volunteer.vercel.app/api/refresh-local-issues")
+          cat response.json
+          echo
+          if [ "$http_code" -ge 400 ]; then
+            echo "Request failed with HTTP $http_code"
+            exit 1
+          fi
