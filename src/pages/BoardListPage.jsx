@@ -52,8 +52,8 @@ function BoardListPage() {
           <img src={bannerBoard} alt="" className="page-banner" />
           <div className="page-head">
             <div>
-              <span className="eyebrow">게시판</span>
-              <h1>이음봉사단 게시판</h1>
+              <span className="eyebrow">이음이 소식</span>
+              <h1>이음봉사단 이음이 소식</h1>
             </div>
           </div>
           <EmptyState message="로그인 후 이용할 수 있는 메뉴입니다." />
@@ -74,8 +74,8 @@ function BoardListPage() {
 
         <div className="page-head">
           <div>
-            <span className="eyebrow">게시판</span>
-            <h1>이음봉사단 게시판</h1>
+            <span className="eyebrow">이음이 소식</span>
+            <h1>이음봉사단 이음이 소식</h1>
           </div>
           {approved && (
             <Link to="/board/new" className="btn btn-primary">

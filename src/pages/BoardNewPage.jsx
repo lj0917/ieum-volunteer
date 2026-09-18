@@ -63,7 +63,7 @@ function BoardNewPage() {
       <div className="container">
         <div className="page-head">
           <div>
-            <span className="eyebrow">게시판</span>
+            <span className="eyebrow">이음이 소식</span>
             <h1>글쓰기</h1>
           </div>
         </div>

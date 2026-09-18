@@ -191,8 +191,8 @@ function GalleryPage() {
           <img src={bannerGallery} alt="" className="page-banner" />
           <div className="page-head">
             <div>
-              <span className="eyebrow">활동 사진첩</span>
-              <h1>이음봉사단 활동 모습</h1>
+              <span className="eyebrow">이음이 활동</span>
+              <h1>이음봉사단 이음이 활동</h1>
             </div>
           </div>
           <EmptyState message="로그인 후 이용할 수 있는 메뉴입니다." />
@@ -213,8 +213,8 @@ function GalleryPage() {
 
         <div className="page-head">
           <div>
-            <span className="eyebrow">활동 사진첩</span>
-            <h1>이음봉사단 활동 모습</h1>
+            <span className="eyebrow">이음이 활동</span>
+            <h1>이음봉사단 이음이 활동</h1>
           </div>
         </div>
 

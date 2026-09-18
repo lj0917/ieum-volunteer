@@ -6,9 +6,9 @@ import { useAuth } from '../context/AuthContext.jsx'
 const NAV_LINKS = [
   { href: '/#about', label: '소개' },
   { href: '/#programs', label: '주요 사업' },
-  { href: '/notices', label: '공지사항' },
-  { href: '/board', label: '게시판', authOnly: true },
-  { href: '/gallery', label: '사진첩', authOnly: true },
+  { href: '/notices', label: '이음이 공지' },
+  { href: '/board', label: '이음이 소식', authOnly: true },
+  { href: '/gallery', label: '이음이 활동', authOnly: true },
   { href: '/local-news', label: '북구소식' },
 ]
 

@@ -39,8 +39,8 @@ function NoticesListPage() {
 
         <div className="page-head">
           <div>
-            <span className="eyebrow">공지사항</span>
-            <h1>이음봉사단 공지사항</h1>
+            <span className="eyebrow">이음이 공지</span>
+            <h1>이음봉사단 이음이 공지</h1>
           </div>
         </div>
 
