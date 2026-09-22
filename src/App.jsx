@@ -20,6 +20,7 @@ import AdminHoursPage from './pages/AdminHoursPage.jsx'
 import AdminActivityItemsPage from './pages/AdminActivityItemsPage.jsx'
 import StaffLeavePage from './pages/StaffLeavePage.jsx'
 import AdminLeavePage from './pages/AdminLeavePage.jsx'
+import AdminAiPage from './pages/AdminAiPage.jsx'
 import LocalNewsPage from './pages/LocalNewsPage.jsx'
 import AdminLocalNewsPage from './pages/AdminLocalNewsPage.jsx'
 import SupportPage from './pages/SupportPage.jsx'
@@ -69,6 +70,7 @@ function App() {
             <Route path="/admin/activity-items" element={<AdminActivityItemsPage />} />
             <Route path="/leave" element={<StaffLeavePage />} />
             <Route path="/admin/leave" element={<AdminLeavePage />} />
+            <Route path="/admin/ai" element={<AdminAiPage />} />
             <Route path="/admin/local-news" element={<AdminLocalNewsPage />} />
           </Routes>
         </main>

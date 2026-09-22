@@ -8,6 +8,7 @@ const TABS = [
   { to: '/admin/activity-items', label: '활동 항목 관리' },
   { to: '/admin/hours', label: '봉사시간 관리' },
   { to: '/admin/leave', label: '연차/근태 관리' },
+  { to: '/admin/ai', label: 'AI 판정 도구' },
   { to: '/admin/local-news', label: '지역소식 관리' },
 ]
 
