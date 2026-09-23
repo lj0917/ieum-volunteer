@@ -1418,7 +1418,7 @@
   cursor: pointer;
 }
 
-/* AI 판정 도구 */
+/* AI 챗봇 */
 .ai-layout {
   display: flex;
   gap: 20px;
@@ -1494,71 +1494,79 @@
 .ai-main {
   flex: 1 1 auto;
   min-width: 0;
-}
-
-.ai-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  height: 600px;
 }
 
-.ai-form textarea,
-.ai-form input[type='text'] {
-  width: 100%;
-  font: inherit;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: #fff;
+.ai-chat-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
 }
 
-.ai-form select {
-  height: 40px;
+.ai-chat-toolbar select {
+  height: 36px;
   padding: 0 10px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: #fff;
   font: inherit;
-  max-width: 220px;
 }
 
-.ai-criteria-row {
-  display: flex;
-  gap: 8px;
-}
-
-.ai-criteria-row input {
-  flex: 1 1 0;
-}
-
-.ai-detail {
+.ai-chat-thread {
+  flex: 1 1 auto;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.ai-detail__block {
-  padding: 14px 16px;
-  background: var(--bg-soft);
-  border-radius: 10px;
-}
-
-.ai-detail__block h3 {
-  margin: 0 0 8px;
-  font-size: 14px;
-  color: var(--muted);
-}
-
-.ai-answer-box {
+  gap: 12px;
   padding: 16px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   background: #fff;
 }
 
-.ai-answer-box ul {
-  margin: 8px 0 0;
-  padding-left: 18px;
+.ai-chat-msg {
+  max-width: 78%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  white-space: pre-wrap;
+  line-height: 1.55;
+  font-size: 14.5px;
+}
+
+.ai-chat-msg--user {
+  align-self: flex-end;
+  background: var(--blue-dark);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.ai-chat-msg--assistant {
+  align-self: flex-start;
+  background: var(--bg-soft);
+  color: var(--ink);
+  border-bottom-left-radius: 4px;
+}
+
+.ai-chat-msg--pending {
+  opacity: 0.6;
+}
+
+.ai-chat-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.ai-chat-form textarea {
+  flex: 1 1 auto;
+  resize: none;
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
 }
 
 /* Leave / attendance management */
